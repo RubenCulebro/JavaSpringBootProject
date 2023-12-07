@@ -1,8 +1,11 @@
 package com.example.javaspringbootproject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/course") // This means URL's start with /demo (after Application path)
@@ -14,7 +17,8 @@ public class CourseController {
     // Add – a particular course
     @PostMapping(path="/add") // Map ONLY POST Requests
     public @ResponseBody String addNewCourse (@RequestParam String courseName, @RequestParam String courseNumber,
-                                              @RequestParam Integer capacity){
+                                              @RequestParam Integer capacity, @RequestParam String year,
+                                              @RequestParam String semester, @RequestParam Integer pid){
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
 
@@ -22,8 +26,18 @@ public class CourseController {
         course.setCourseName(courseName);
         course.setCourseNumber(courseNumber);
         course.setCapacity(capacity);
+        course.setYear(year);
+        course.setSemester(semester);
+        course.setPid(pid);
         courseRepository.save(course);
         return course.getCourseName() + " was saved.";
+    }
+
+    @PostMapping(path="/add",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE) // Map ONLY POST Requests
+    public @ResponseBody Course addNewCourseObject (@RequestBody Course newCourse){
+        return courseRepository.save(newCourse);
     }
 
     // List – all courses
@@ -38,5 +52,35 @@ public class CourseController {
     public @ResponseBody Course getCourse(@PathVariable Integer id) {
         // This returns a JSON or XML with the users
         return courseRepository.getCourseByCourseId(id);
+    }
+
+    @PutMapping(path="/modify",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody Course modifyCourse(@RequestBody Course modifiedCourse){
+        Course course = courseRepository.getCourseByCourseId(modifiedCourse.getCourseId());
+        if (course == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        course.setCourseName(modifiedCourse.getCourseName());
+        course.setCourseNumber(modifiedCourse.getCourseNumber());
+        course.setCapacity(modifiedCourse.getCapacity());
+        course.setYear(modifiedCourse.getYear());
+        course.setSemester(modifiedCourse.getSemester());
+        course.setPid(modifiedCourse.getPid());
+
+        return courseRepository.save(course);
+    }
+
+    @DeleteMapping(path="/delete")
+    public @ResponseBody String deleteCourse(@RequestParam Integer courseId){
+        Course course = courseRepository.getCourseByCourseId(courseId);
+        if (course == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        courseRepository.delete(course);
+        return course.getCourseNumber() + ": " + course.getCourseName() + " was removed.";
     }
 }

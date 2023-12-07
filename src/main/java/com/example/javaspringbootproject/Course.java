@@ -13,6 +13,9 @@ public class Course {
     private String courseName;
     private String courseNumber;
     private Integer capacity;
+    private String year;
+    private String semester;
+    private Integer pid;
 
     public Integer getCourseId() {
         return courseId;
@@ -44,5 +47,29 @@ public class Course {
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
+    }
+
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
+    }
+
+    public String getSemester() {
+        return semester;
+    }
+
+    public void setSemester(String semester) {
+        this.semester = semester;
+    }
+
+    public Integer getPid() {
+        return pid;
+    }
+
+    public void setPid(Integer pid) {
+        this.pid = pid;
     }
 }

@@ -1,8 +1,11 @@
 package com.example.javaspringbootproject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller // This means that this class is a Controller
 @RequestMapping(path="/student") // This means URL's start with /demo (after Application path)
@@ -32,6 +35,13 @@ public class StudentController {
         return student.getFirstName() + " " + student.getLastName() + " was saved.";
     }
 
+    @PostMapping(path="/add",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE) // Map ONLY POST Requests
+    public @ResponseBody Student addNewStudentObject (@RequestBody Student newStudent){
+        return studentRepository.save(newStudent);
+    }
+
     // List – all students
     @GetMapping(path="/list")
     public @ResponseBody Iterable<Student> getAllStudents() {
@@ -44,5 +54,36 @@ public class StudentController {
     public @ResponseBody Student getStudent(@PathVariable Integer id) {
         // This returns a JSON or XML with the users
         return studentRepository.getStudentByStudentId(id);
+    }
+
+    @PutMapping(path="/modify",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody Student modifyStudent(@RequestBody Student modifiedStudent){
+        Student student = studentRepository.getStudentByStudentId(modifiedStudent.getStudentId());
+        if (student == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        student.setFirstName(modifiedStudent.getFirstName());
+        student.setLastName(modifiedStudent.getLastName());
+        student.setEmail(modifiedStudent.getEmail());
+        student.setAddress(modifiedStudent.getAddress());
+        student.setCity(modifiedStudent.getCity());
+        student.setPostal(modifiedStudent.getPostal());
+        student.setPhone(modifiedStudent.getPhone());
+
+        return studentRepository.save(student);
+    }
+
+    @DeleteMapping(path="/delete")
+    public @ResponseBody String deleteStudent(@RequestParam Integer studentId){
+        Student student = studentRepository.getStudentByStudentId(studentId);
+        if (student == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        studentRepository.delete(student);
+        return student.getFirstName() + " " + student.getLastName() + " was removed.";
     }
 }
